@@ -1,3 +1,5 @@
+var am_pm = false; // Change to false for 24H clock format!
+
 var time_remaining = 0;
 var selected_user = null;
 var valid_image = /.*\.(png|svg|jpg|jpeg|bmp)$/i;
@@ -122,17 +124,22 @@ function show_users() {
 }
 
 function user_clicked(event) {
+  var user_id = event.currentTarget.id;
+  toggle_user(user_id);
+  show_message("");
+  event.stopPropagation();
+  return false;
+}
+
+function toggle_user(user_id) {
   if (selected_user !== null) {
     selected_user = null;
     lightdm.cancel_authentication();
     show_users();
   } else {
-    selected_user = event.currentTarget.id;
-    start_authentication(event.currentTarget.id);
+    selected_user = user_id;
+    start_authentication(user_id);
   }
-  show_message("");
-  event.stopPropagation();
-  return false;
 }
 
 function setVisible(element, visible) {
@@ -154,15 +161,18 @@ function update_time() {
   var hh = date.getHours();
   var mm = date.getMinutes();
   var ss = date.getSeconds();
-  var suffix= "AM";
-  if (hh > 12) {
-    hh = hh - 12;
-    suffix = "PM";
+  var suffix = "";
+  if( am_pm ) {
+    var suffix= " AM";
+    if (hh > 12) {
+      hh = hh - 12;
+      suffix = " PM";
+    }
   }
   if (hh < 10) { hh = "0"+hh; }
   if (mm < 10) { mm = "0"+mm; }
   if (ss < 10) { ss = "0"+ss; }
-  time.innerHTML = hh+":"+mm + " " + suffix;
+  time.innerHTML = hh + ":" + mm + suffix;
 }
 
 //////////////////////////////////
@@ -222,3 +232,15 @@ function add_action(id, name, image, clickhandler, template, parent) {
   action_node.onclick = clickhandler;
   parent.appendChild(action_node);
 }
+
+document.onkeydown = function(evt) {
+  evt = evt || window.event;
+  if (selected_user === null && evt.keyCode === 13 || // Enter
+      selected_user !== null && evt.keyCode === 27) { // ESC
+    var user_id = document.querySelector(".user").id;
+    toggle_user(user_id);
+    evt.stopPropagation();
+    return false;
+  }
+}
+
