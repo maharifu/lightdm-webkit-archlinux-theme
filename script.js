@@ -237,8 +237,44 @@ document.onkeydown = function(evt) {
   evt = evt || window.event;
   if (selected_user === null && evt.keyCode === 13 || // Enter
       selected_user !== null && evt.keyCode === 27) { // ESC
-    var user_id = document.querySelector(".user").id;
+    var active = document.querySelector(".user_image_wrapper.active");
+    if(active === null) {
+      var user_id = document.querySelector(".user").id;
+    } else {
+      var user_id = active.parentNode.id;
+      active.className = active.className.replace(' active','');
+    }
     toggle_user(user_id);
+    evt.stopPropagation();
+    return false;
+  }
+
+  // Select user with Left/Right arrow keys
+  if((evt.keyCode === 37 || evt.keyCode == 39) && selected_user === null) {
+    var users = document.querySelectorAll(".user_image_wrapper");
+    var activate = null;
+    var active = null;
+    var i;
+    for( i=0 ; i < users.length ; ++i ) {
+      if( evt.keyCode === 37 ) { // Left
+        var user = users[users.length - i - 1];
+      } else { // Right
+        var user = users[i];
+      }
+      if( activate === null ) {
+        activate = user;
+      }
+      if((' ' + user.className + ' ').indexOf(' active ') > -1) {
+        activate = null;
+        active = user;
+      }
+    }
+    if( activate !== null) {
+      if( active !== null ) {
+        active.className = active.className.replace(' active','');
+      }
+      activate.className += " active";
+    }
     evt.stopPropagation();
     return false;
   }
